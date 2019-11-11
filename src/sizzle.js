@@ -102,6 +102,7 @@ var i,
 	 * 
 	 * 他可以匹配:nth-child(3)中的nth-child
 	 * 也可以匹配 attr-kk = 中的 attr-kk
+	 * 还可以匹配.class 中的 class
 	 */
 	identifier = "(?:\\\\[\\da-fA-F]{1,6}" + whitespace +
 		"?|\\\\[^\\r\\n\\f]|[\\w-]|[^\0-\\x7f])+",
@@ -109,10 +110,24 @@ var i,
 	// Attribute selectors: http://www.w3.org/TR/selectors/#attribute-selectors
 	/**
 	 * 属性 看到这个英文单词应该就已经知道是干啥的了 必然是匹配属性的
+	 * 这里正则就已经很长了 咱们一点一点看
+	 * 属性匹配的字符串 一定是在[]之中的
+	 * 这里分为了5个捕获组
+	 * 第一个是捕获属性名 由第一个identifier捕获
+	 * 第二个捕获的是运算符 =等等
+	 * 第三个捕获组捕获的是用单引号括起来的属性值
+	 * 第四个捕获组捕获的是用双引号括起来的属性值
+	 * 第五个捕获组捕获的是没有用引号括起来的属性值
 	 * 
-	 * /\[[\x20\t\r\n\f]*((?:\\[\da-fA-F]{1,6}[\x20\t\r\n\f]?|\\[^\r\n\f]|[\w-]|[^\x00-\x7f])+)(?:[\x20\t\r\n\f]*
-	 * 	([*^$|!~]?=)[\x20\t\r\n\f]*
-	 * 	(?:'((?:\\.|[^\\'])*)'|"((?:\\.|[^\\"])*)"|((?:\\[\da-fA-F]{1,6}[\x20\t\r\n\f]?|\\[^\r\n\f]|[\w-]|[^\x00-\x7f])+))|)[\x20\t\r\n\f]*\]/
+	 * [attr] [attt = 'jhkj"]
+	 * /\[
+	 * [\x20\t\r\n\f]*((?:\\[\da-fA-F]{1,6}[\x20\t\r\n\f]?|\\[^\r\n\f]|[\w-]|[^\x00-\x7f])+)
+	 * (?:[\x20\t\r\n\f]*([*^$|!~]?=)[\x20\t\r\n\f]*
+	 * (?:'((?:\\.|[^\\'])*)'|
+	 * "((?:\\.|[^\\"])*)"|
+	 * ((?:\\[\da-fA-F]{1,6}[\x20\t\r\n\f]?|\\[^\r\n\f]|[\w-]|[^\x00-\x7f])+))
+	 * |)[\x20\t\r\n\f]*
+	 * \]/
 	 */
 	attributes = "\\[" + whitespace + "*(" + identifier + ")(?:" + whitespace +
 
@@ -123,7 +138,11 @@ var i,
 		// or strings [capture 3 or capture 4]"
 		"*(?:'((?:\\\\.|[^\\\\'])*)'|\"((?:\\\\.|[^\\\\\"])*)\"|(" + identifier + "))|)" +
 		whitespace + "*\\]",
-
+	
+	/**
+	 * 伪类
+	 * 
+	 */
 	pseudos = ":(" + identifier + ")(?:\\((" +
 
 		// To reduce the number of selectors needing tokenize in the preFilter, prefer arguments:
