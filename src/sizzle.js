@@ -88,15 +88,32 @@ var i,
 	// https://www.w3.org/TR/css-syntax-3/#ident-token-diagram
 	/**
 	 * 识别码 解析后是这样个样子的
-	 * 首先 ?: 表示全部都是非获取捕获
-	 * 
 	 * /(?:\\[\da-fA-F]{1,6}[\x20\t\r\n\f]?|\\[^\r\n\f]|[\w-]|[^ -\x7f])+/
 	 * 
+	 * ?: 表示全部都是非获取捕获 并且至少匹配一次
+	 * 匹配4中可能性
+	 * 第一种 \\[\da-fA-F]{1,6}[\x20\t\r\n\f]?  \ 数字a-fA-F一次到6次 加空白一次或零次
+	 * 第二种 \\[^\r\n\f]	\ 不是回车 换行 换页
+	 * 第三种 [\w-] 任何字符或者 -
+	 * 第四种 除了ASCII码中的所有字符
+	 * 
+	 * 
+	 * 这里要说一下 在解析模式 new RegExp('\0') 这里的字符串是单斜杠 最后解析成正则 这个\0 和 \x00 是等价的
+	 * 
+	 * 他可以匹配:nth-child(3)中的nth-child
+	 * 也可以匹配 attr-kk = 中的 attr-kk
 	 */
 	identifier = "(?:\\\\[\\da-fA-F]{1,6}" + whitespace +
 		"?|\\\\[^\\r\\n\\f]|[\\w-]|[^\0-\\x7f])+",
 
 	// Attribute selectors: http://www.w3.org/TR/selectors/#attribute-selectors
+	/**
+	 * 属性 看到这个英文单词应该就已经知道是干啥的了 必然是匹配属性的
+	 * 
+	 * /\[[\x20\t\r\n\f]*((?:\\[\da-fA-F]{1,6}[\x20\t\r\n\f]?|\\[^\r\n\f]|[\w-]|[^\x00-\x7f])+)(?:[\x20\t\r\n\f]*
+	 * 	([*^$|!~]?=)[\x20\t\r\n\f]*
+	 * 	(?:'((?:\\.|[^\\'])*)'|"((?:\\.|[^\\"])*)"|((?:\\[\da-fA-F]{1,6}[\x20\t\r\n\f]?|\\[^\r\n\f]|[\w-]|[^\x00-\x7f])+))|)[\x20\t\r\n\f]*\]/
+	 */
 	attributes = "\\[" + whitespace + "*(" + identifier + ")(?:" + whitespace +
 
 		// Operator (capture 2)
