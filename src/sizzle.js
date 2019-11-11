@@ -74,9 +74,25 @@ var i,
 	// Regular expressions
 
 	// http://www.w3.org/TR/css3-selectors/#whitespace
+	/**
+	 * \x20 对应ASCII的第32位 对应的就是空格
+	 * \t 对应的是制表符 反正也是个空白
+	 * \r 这个叫回车符 让光标回到当前行的开头 继续输入会覆盖原来的字 和 \n不一样
+	 * \n 换行 不解释
+	 * \f 这个是换页符 具体干啥的不太清楚 反正也是空白
+	 * 
+	 * 这里和\s就差了一个\v, \v代表垂直制表符
+	 */
 	whitespace = "[\\x20\\t\\r\\n\\f]",
 
 	// https://www.w3.org/TR/css-syntax-3/#ident-token-diagram
+	/**
+	 * 识别码 解析后是这样个样子的
+	 * 首先 ?: 表示全部都是非获取捕获
+	 * 
+	 * /(?:\\[\da-fA-F]{1,6}[\x20\t\r\n\f]?|\\[^\r\n\f]|[\w-]|[^ -\x7f])+/
+	 * 
+	 */
 	identifier = "(?:\\\\[\\da-fA-F]{1,6}" + whitespace +
 		"?|\\\\[^\\r\\n\\f]|[\\w-]|[^\0-\\x7f])+",
 
