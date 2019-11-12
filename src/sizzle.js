@@ -88,11 +88,11 @@ var i,
 	// https://www.w3.org/TR/css-syntax-3/#ident-token-diagram
 	/**
 	 * 识别码 解析后是这样个样子的
-	 * /(?:\\[\da-fA-F]{1,6}[\x20\t\r\n\f]?|\\[^\r\n\f]|[\w-]|[^ -\x7f])+/
+	 * /(?:\\[\da-fA-F]{1,6}[\x20\t\r\n\f]?|\\[^\r\n\f]|[\w-]|[^x00-\x7f])+/
 	 * 
 	 * ?: 表示全部都是非获取捕获 并且至少匹配一次
 	 * 匹配4中可能性
-	 * 第一种 \\[\da-fA-F]{1,6}[\x20\t\r\n\f]?  \ 数字a-fA-F一次到6次 加空白一次或零次
+	 * 第一种 \\[\da-fA-F]{1,6}[\x20\t\r\n\f]?  	匹配的是转义字符 如\56 或者\010110 之所以6位应该是支持2进制
 	 * 第二种 \\[^\r\n\f]	\ 不是回车 换行 换页
 	 * 第三种 [\w-] 任何字符或者 -
 	 * 第四种 除了ASCII码中的所有字符
@@ -141,7 +141,22 @@ var i,
 	
 	/**
 	 * 伪类
+	 * :(identifier)(?:\((
+	 * ('((?:\\.|[^\\'])*)'|\"((?:\\.|[^\\\"])*)\")|
+	 * ((?:\\.|[^\\()[\]]| attributes )*)|
+	 * .*
+	 * )\)|)
 	 * 
+	 * 这里有6个捕获组 还有5个属性的捕获组
+	 * 第一个捕获伪类名 如:after中的after   :nth-child(3)中的nth-child
+	 * 第二个捕获伪类中小括号内所有的内容 如:nth-child(3)中的3   或者:nth-child("3") 中的"3"	或者:nth-child('3') 中的'3'
+	 * 第三个捕获小括号内使用引号的字符串 如:nth-child("3") 中的"3"	或者:nth-child('3') 中的'3'		也就是说当小括号内的字符串使用引号括起来的 那么 第二个捕获组 与第三个捕获组的值是相同的
+	 * 第四个捕获单引号中的值 如:nth-child('3') 中的3
+	 * 第五个捕获双引号中的值 如:nth-child("3") 中的3
+	 * 第六个捕获除了小括号中的字符串还有小括号 否则是都捕获的 如:nth-child(3)中的3	或者:not([href = 'aaa'])中的 [href = 'aaa'] 
+	 * 
+	 * 这里要说一下如果小括号中还有小括号 比如 div:not(:nth-child(3))	这种情况的话只有第一第二捕获组有值 分别是not :nth-child(3) 也就是说除了这种情况外 3-6捕获组其中一个必定是有值的 后面的函数应该是通过这些做判断 继续拆分 这里先留一个疑问 留着以后解决
+	 * 还有就是如果第六个捕获组捕获了一个属性的话 那么剩下的 7-11捕获组对应的就是属性正则的1-5捕获组
 	 */
 	pseudos = ":(" + identifier + ")(?:\\((" +
 
@@ -158,15 +173,18 @@ var i,
 
 	// Leading and non-escaped trailing whitespace, capturing some non-whitespace characters preceding the latter
 	rwhitespace = new RegExp( whitespace + "+", "g" ),
-	rtrim = new RegExp( "^" + whitespace + "+|((?:^|[^\\\\])(?:\\\\.)*)" +
-		whitespace + "+$", "g" ),
-
+	// 前后空白
+	rtrim = new RegExp( "^" + whitespace + "+|((?:^|[^\\\\])(?:\\\\.)*)" + whitespace + "+$", "g" ),
+	//逗号
 	rcomma = new RegExp( "^" + whitespace + "*," + whitespace + "*" ),
+	//组合器
 	rcombinators = new RegExp( "^" + whitespace + "*([>+~]|" + whitespace + ")" + whitespace +
 		"*" ),
+	//后代
 	rdescend = new RegExp( whitespace + "|>" ),
-
+	//伪类
 	rpseudo = new RegExp( pseudos ),
+	//标识符
 	ridentifier = new RegExp( "^" + identifier + "$" ),
 
 	matchExpr = {
@@ -175,6 +193,17 @@ var i,
 		"TAG": new RegExp( "^(" + identifier + "|[*])" ),
 		"ATTR": new RegExp( "^" + attributes ),
 		"PSEUDO": new RegExp( "^" + pseudos ),
+		/**
+		 * /^:(only|first|last|nth|nth-last)-(child|of-type)(?:\(whitespace*(even|odd|(([+-]|)(\d*)n|)whitespace*(?:([+-]|)whitespace*(\d+)|))whitespace*\)|)/i
+		 * // C1 	only|first|last|nth|nth-last
+		 * // C2	child|of-type
+		 * // C3	括号中全部的内容
+		 * // C4	even odd 或者 表达式2n+1 中的2n 
+		 * // C5	2n的正负 +2n -2n 中的 + -
+		 * // C6	n的倍数 2n 中的 2
+		 * // C7	运算符 + -
+		 * // C8	最后一个数 1
+		 */
 		"CHILD": new RegExp( "^:(only|first|last|nth|nth-last)-(child|of-type)(?:\\(" +
 			whitespace + "*(even|odd|(([+-]|)(\\d*)n|)" + whitespace + "*(?:([+-]|)" +
 			whitespace + "*(\\d+)|))" + whitespace + "*\\)|)", "i" ),
@@ -200,6 +229,7 @@ var i,
 
 	// CSS escapes
 	// http://www.w3.org/TR/CSS21/syndata.html#escaped-characters
+	//转义
 	runescape = new RegExp( "\\\\[\\da-fA-F]{1,6}" + whitespace + "?|\\\\([^\\r\\n\\f])", "g" ),
 	funescape = function( escape, nonHex ) {
 		var high = "0x" + escape.slice( 1 ) - 0x10000;
