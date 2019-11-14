@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="./sizzle.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1 id="HEAD">标题1</h1>
+        <p id="p1">pppppp</p>
+        <input type="text">
+        <br>
+        <input type="checkbox">
+        <input type="checkbox">
+        <input type="checkbox">
+    </div>
+    <div></div>
+    <script>
+        window.onload = function() {
+            let text = Sizzle('#p1 + input[type="text"]');
+            console.log(text);
+        }
+    </script>
+</body>
+</html>
