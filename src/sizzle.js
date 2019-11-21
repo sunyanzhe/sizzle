@@ -694,11 +694,13 @@ setDocument = Sizzle.setDocument = function( node ) {
 	// IE/Edge sometimes throw a "Permission denied" error when strict-comparing
 	// two documents; shallow comparisons work.
 	// eslint-disable-next-line eqeqeq
+	// 如果文档无效或已被选择,就直接返回, 性能优化
 	if ( doc == document || doc.nodeType !== 9 || !doc.documentElement ) {
 		return document;
 	}
 
 	// Update global variables
+	// 这里将外部的document变量赋值, 更新外部变量
 	document = doc;
 	docElem = document.documentElement;
 	documentIsHTML = !isXML( document );
@@ -709,6 +711,7 @@ setDocument = Sizzle.setDocument = function( node ) {
 	// IE/Edge sometimes throw a "Permission denied" error when strict-comparing
 	// two documents; shallow comparisons work.
 	// eslint-disable-next-line eqeqeq
+	//兼容IE iframe用的
 	if ( preferredDoc != document &&
 		( subWindow = document.defaultView ) && subWindow.top !== subWindow ) {
 
