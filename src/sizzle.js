@@ -730,6 +730,8 @@ setDocument = Sizzle.setDocument = function( node ) {
 	// IE/Edge & older browsers don't support the :scope pseudo-class.
 	// Support: Safari 6.0 only
 	// Safari 6.0 supports :scope but it's an alias of :root there.
+	// IE/Edge 和 老浏览器不支持 :scope 这个伪类
+	// 这里判断:scope会不会选中元素 (因为没添加scope这个伪类, 所以按理说length应该为0)
 	support.scope = assert( function( el ) {
 		docElem.appendChild( el ).appendChild( document.createElement( "div" ) );
 		return typeof el.querySelectorAll !== "undefined" &&
@@ -742,6 +744,7 @@ setDocument = Sizzle.setDocument = function( node ) {
 	// Support: IE<8
 	// Verify that getAttribute really returns attributes and not properties
 	// (excepting IE8 booleans)
+	// 判断特性与属性并不是重叠的 老的IE 在给元素特性之后 通过getAttribute可以从属性里面拿到
 	support.attributes = assert( function( el ) {
 		el.className = "i";
 		return !el.getAttribute( "className" );
@@ -751,32 +754,39 @@ setDocument = Sizzle.setDocument = function( node ) {
 	---------------------------------------------------------------------- */
 
 	// Check if getElementsByTagName("*") returns only elements
+	// 检查getElemmentsByTagName('*')只返回元素不返回注释
 	support.getElementsByTagName = assert( function( el ) {
 		el.appendChild( document.createComment( "" ) );
 		return !el.getElementsByTagName( "*" ).length;
 	} );
 
 	// Support: IE<9
+	// 判断getElementsByClassName是浏览器原生方法
 	support.getElementsByClassName = rnative.test( document.getElementsByClassName );
 
 	// Support: IE<10
 	// Check if getElementById returns elements by name
 	// The broken getElementById methods don't pick up programmatically-set names,
 	// so use a roundabout getElementsByName test
+	// 检查如果getElementById返回元素通过name
+	// 这个无用的getElementById方法不能获取通过编程方式设置的名称
+	// 所以使用一个迂回的方式测试getElementsByName
 	support.getById = assert( function( el ) {
 		docElem.appendChild( el ).id = expando;
 		return !document.getElementsByName || !document.getElementsByName( expando ).length;
 	} );
 
 	// ID filter and find
+	//如果浏览支持getElementById
 	if ( support.getById ) {
 		Expr.filter[ "ID" ] = function( id ) {
+			//转码
 			var attrId = id.replace( runescape, funescape );
 			return function( elem ) {
-				return elem.getAttribute( "id" ) === attrId;
+				return elem.getAttribute( "id" ) === attrId;   
 			};
 		};
-		Expr.find[ "ID" ] = function( id, context ) {
+		Expr.find[ "ID" ] = function( id, context ) { 
 			if ( typeof context.getElementById !== "undefined" && documentIsHTML ) {
 				var elem = context.getElementById( id );
 				return elem ? [ elem ] : [];
