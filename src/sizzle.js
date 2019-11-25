@@ -908,6 +908,8 @@ setDocument = Sizzle.setDocument = function( node ) {
 			// Support: IE8, Opera 11-12.16
 			// Nothing should be selected when empty strings follow ^= or $= or *=
 			// The test attribute must be unknown in Opera but "safe" for WinRT
+			// ^= $= *=后面接空字符时，应该什么都不选中
+			// 这个测试属性必须是未知的属性在Opera中但是在WinRT中是安全的
 			// https://msdn.microsoft.com/en-us/library/ie/hh465388.aspx#attribute_section
 			if ( el.querySelectorAll( "[msallowcapture^='']" ).length ) {
 				rbuggyQSA.push( "[*^$]=" + whitespace + "*(?:''|\"\")" );
@@ -915,11 +917,13 @@ setDocument = Sizzle.setDocument = function( node ) {
 
 			// Support: IE8
 			// Boolean attributes and "value" are not treated correctly
+			// 布尔属性和值不能正确处理
 			if ( !el.querySelectorAll( "[selected]" ).length ) {
 				rbuggyQSA.push( "\\[" + whitespace + "*(?:value|" + booleans + ")" );
 			}
 
 			// Support: Chrome<29, Android<4.4, Safari<7.0+, iOS<7.0+, PhantomJS<1.9.8+
+			// select id='" + expando + "-\r\\' 中有空格 ~=是可以匹配的到
 			if ( !el.querySelectorAll( "[id~=" + expando + "-]" ).length ) {
 				rbuggyQSA.push( "~=" );
 			}
@@ -929,6 +933,9 @@ setDocument = Sizzle.setDocument = function( node ) {
 			// Adding a temporary attribute to the document before the selection works
 			// around the issue.
 			// Interestingly, IE 10 & older don't seem to have the issue.
+			// IE11/Edge不能找到[name='']这样的元素 在某些情况下
+			// 围绕这个问题 添加一个临时属性到文档在选择器工作之前
+			// 有意思的是 老IE没问题
 			input = document.createElement( "input" );
 			input.setAttribute( "name", "" );
 			el.appendChild( input );
@@ -940,6 +947,7 @@ setDocument = Sizzle.setDocument = function( node ) {
 			// Webkit/Opera - :checked should return selected option elements
 			// http://www.w3.org/TR/2011/REC-css3-selectors-20110929/#checked
 			// IE8 throws error here and will not see later tests
+			// 应该可以选择select 中被selected的 option
 			if ( !el.querySelectorAll( ":checked" ).length ) {
 				rbuggyQSA.push( ":checked" );
 			}
@@ -947,12 +955,15 @@ setDocument = Sizzle.setDocument = function( node ) {
 			// Support: Safari 8+, iOS 8+
 			// https://bugs.webkit.org/show_bug.cgi?id=136851
 			// In-page `selector#id sibling-combinator selector` fails
+			// ID加兄弟选择器 会失效
 			if ( !el.querySelectorAll( "a#" + expando + "+*" ).length ) {
 				rbuggyQSA.push( ".#.+[+~]" );
 			}
 
 			// Support: Firefox <=3.6 - 5 only
 			// Old Firefox doesn't throw on a badly-escaped identifier.
+			// 当用的是错误的转义字符时，老火狐不会throw error
+			// 这里如果报错 会直接去到assert的catch 而不会走最后一个push，相当灵活的写法 膜拜
 			el.querySelectorAll( "\\\f" );
 			rbuggyQSA.push( "[\\r\\n\\f]" );
 		} );
