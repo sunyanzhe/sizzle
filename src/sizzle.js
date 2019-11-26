@@ -980,18 +980,22 @@ setDocument = Sizzle.setDocument = function( node ) {
 
 			// Support: IE8
 			// Enforce case-sensitivity of name attribute
+			// name属性值得大小写问题 
 			if ( el.querySelectorAll( "[name=d]" ).length ) {
 				rbuggyQSA.push( "name" + whitespace + "*[*^$|!~]?=" );
 			}
 
 			// FF 3.5 - :enabled/:disabled and hidden elements (hidden elements are still enabled)
 			// IE8 throws error here and will not see later tests
+			// option 和 input应该被选中
+			// IE8会throw error在这里 并且后面的test都不在执行
 			if ( el.querySelectorAll( ":enabled" ).length !== 2 ) {
 				rbuggyQSA.push( ":enabled", ":disabled" );
 			}
 
 			// Support: IE9-11+
 			// IE's :disabled selector does not pick up the children of disabled fieldsets
+			// IE的 :disabled选择器 不选择 disabled 的 fieldsets元素的子集
 			docElem.appendChild( el ).disabled = true;
 			if ( el.querySelectorAll( ":disabled" ).length !== 2 ) {
 				rbuggyQSA.push( ":enabled", ":disabled" );
@@ -999,6 +1003,7 @@ setDocument = Sizzle.setDocument = function( node ) {
 
 			// Support: Opera 10 - 11 only
 			// Opera 10-11 does not throw on post-comma invalid pseudos
+			// Opera 10-11 逗号后的伪类无效是 不会报错
 			el.querySelectorAll( "*,:x" );
 			rbuggyQSA.push( ",.*:" );
 		} );
