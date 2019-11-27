@@ -1019,10 +1019,12 @@ setDocument = Sizzle.setDocument = function( node ) {
 
 			// Check to see if it's possible to do matchesSelector
 			// on a disconnected node (IE 9)
+			// 不在DOM树上的元素 是否可以用matches检测
 			support.disconnectedMatch = matches.call( el, "*" );
 
 			// This should fail with an exception
 			// Gecko does not error, returns false instead
+			// 下面这个本应该报错 但是Gecko只是返回false; 这里也是不被catch继续往下走
 			matches.call( el, "[s!='']:x" );
 			rbuggyMatches.push( "!=", pseudos );
 		} );
