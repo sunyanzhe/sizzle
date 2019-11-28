@@ -1125,6 +1125,7 @@ setDocument = Sizzle.setDocument = function( node ) {
 	function( a, b ) {
 
 		// Exit early if the nodes are identical
+		// 节点如果相同尽早退出
 		if ( a === b ) {
 			hasDuplicate = true;
 			return 0;
@@ -1138,6 +1139,7 @@ setDocument = Sizzle.setDocument = function( node ) {
 			bp = [ b ];
 
 		// Parentless nodes are either documents or disconnected
+		// 没有父级节点 要不是document 要不就是没在DOM树上
 		if ( !aup || !bup ) {
 
 			// Support: IE 11+, Edge 17 - 18+
