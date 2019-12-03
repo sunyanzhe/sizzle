@@ -320,11 +320,13 @@ function Sizzle( selector, context, results, seed ) {
 		newContext = context && context.ownerDocument,
 
 		// nodeType defaults to 9, since context defaults to document
+		// 如果不传context默认就是document 就是9
 		nodeType = context ? context.nodeType : 9;
 
 	results = results || [];
 
 	// Return early from calls with invalid selector or context
+	// 要是没有选择器 或者作用域不是document fragment 或者element的话 就退出 (性能优化)
 	if ( typeof selector !== "string" || !selector ||
 		nodeType !== 1 && nodeType !== 9 && nodeType !== 11 ) {
 
@@ -332,6 +334,7 @@ function Sizzle( selector, context, results, seed ) {
 	}
 
 	// Try to shortcut find operations (as opposed to filters) in HTML documents
+	// 如果没有种子集, 进行快速查找
 	if ( !seed ) {
 		setDocument( context );
 		context = context || document;
@@ -340,9 +343,12 @@ function Sizzle( selector, context, results, seed ) {
 
 			// If the selector is sufficiently simple, try using a "get*By*" DOM method
 			// (excepting DocumentFragment context, where the methods don't exist)
+			// DocumengFragment 没有getElementBy...这堆方法
+			// 如果只是单个class 或者 单个ID 或者单个标签的话 通过原生方法直接选取
 			if ( nodeType !== 11 && ( match = rquickExpr.exec( selector ) ) ) {
 
 				// ID selector
+				// ID选择
 				if ( ( m = match[ 1 ] ) ) {
 
 					// Document context
@@ -376,11 +382,13 @@ function Sizzle( selector, context, results, seed ) {
 					}
 
 				// Type selector
+				// 标签选择
 				} else if ( match[ 2 ] ) {
 					push.apply( results, context.getElementsByTagName( selector ) );
 					return results;
 
 				// Class selector
+				// class选择
 				} else if ( ( m = match[ 3 ] ) && support.getElementsByClassName &&
 					context.getElementsByClassName ) {
 
@@ -390,12 +398,15 @@ function Sizzle( selector, context, results, seed ) {
 			}
 
 			// Take advantage of querySelectorAll
+			// 使用querySelectorAll
+			// 如果支持qsa, 并且缓存里面没有值, 并且bug里面没有这些值
 			if ( support.qsa &&
 				!nonnativeSelectorCache[ selector + " " ] &&
 				( !rbuggyQSA || !rbuggyQSA.test( selector ) ) &&
 
 				// Support: IE 8 only
 				// Exclude object elements
+				// 排除object对象
 				( nodeType !== 1 || context.nodeName.toLowerCase() !== "object" ) ) {
 
 				newSelector = selector;
@@ -408,6 +419,8 @@ function Sizzle( selector, context, results, seed ) {
 				// The technique has to be used as well when a leading combinator is used
 				// as such selectors are not recognized by querySelectorAll.
 				// Thanks to Andrew Dupont for this technique.
+				// 当计算子集或者子集组合的时候,qSA在选取元素的时候会表现的很奇怪, 返回的不是想要的结果
+				// 在这种情况下, 我们通过在列表中的每个选择器前添加一个的ID来解决这个问题
 				if ( nodeType === 1 &&
 					( rdescend.test( selector ) || rcombinators.test( selector ) ) ) {
 
@@ -917,7 +930,7 @@ setDocument = Sizzle.setDocument = function( node ) {
 
 			// Support: IE8
 			// Boolean attributes and "value" are not treated correctly
-			// 布尔属性和值不能正确处理
+			// 布尔属性和'value'属性不能正确处理
 			if ( !el.querySelectorAll( "[selected]" ).length ) {
 				rbuggyQSA.push( "\\[" + whitespace + "*(?:value|" + booleans + ")" );
 			}

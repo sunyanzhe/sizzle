@@ -23,7 +23,10 @@
     <div></div>
     <script>
         window.onload = function() {
-            let text = Sizzle('#p1 + input[type="text"]');
+            let div = Sizzle('div');
+            let p = Sizzle('#p1');
+            let container = Sizzle('.container');
+            let text = Sizzle('.container #p1 + input[type="text"]');
             console.log(text);
         }
     </script>
