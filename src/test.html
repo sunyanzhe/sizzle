@@ -27,7 +27,7 @@
     <script>
         window.onload = function() {
             let div = Sizzle('div');
-            let p = Sizzle('#p1');
+            let p = Sizzle('#p1', document.body);
             let container = Sizzle('.container');
             let text = Sizzle('.container #p1 + input[type="text"]');
             console.log(text);

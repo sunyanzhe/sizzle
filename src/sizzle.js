@@ -904,7 +904,7 @@ setDocument = Sizzle.setDocument = function( node ) {
 	// See https://bugs.jquery.com/ticket/13378
 	rbuggyQSA = [];
 
-	if ( ( support.qsa = rnative.test( document.querySelectorAll ) ) ) {
+	if ( ( support.qsa = !rnative.test( document.querySelectorAll ) ) ) {
 
 		// Build QSA regex
 		// Regex strategy adopted from Diego Perini
@@ -1383,6 +1383,9 @@ Expr = Sizzle.selectors = {
 	},
 
 	preFilter: {
+    //属性最后返回数组中只有四项
+    //除了匹配到的字符串之外
+    //第三 第四 第五捕获组也就是双引号 单引号 没引号放到了index = 3的地方
 		"ATTR": function( match ) {
 			match[ 1 ] = match[ 1 ].replace( runescape, funescape );
 
