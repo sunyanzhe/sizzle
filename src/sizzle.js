@@ -198,7 +198,7 @@ var i,
 		 * // C1 	only|first|last|nth|nth-last
 		 * // C2	child|of-type
 		 * // C3	括号中全部的内容
-		 * // C4	even odd 或者 表达式2n+1 中的2n 
+		 * // C4	表达式2n+1 中的2n 
 		 * // C5	2n的正负 +2n -2n 中的 + -
 		 * // C6	n的倍数 2n 中的 2
 		 * // C7	运算符 + -
@@ -430,6 +430,8 @@ function Sizzle( selector, context, results, seed ) {
 
 					// We can use :scope instead of the ID hack if the browser
 					// supports it & if we're not changing the context.
+					// 可以使用:scope替代ID如果浏览器支持的话
+					// 如果我们不去改变上下文
 					if ( newContext !== context || !support.scope ) {
 
 						// Capture the context ID, setting it first if necessary
@@ -668,6 +670,7 @@ function createPositionalPseudo( fn ) {
 
 /**
  * Checks a node for validity as a Sizzle context
+ * 检测一个节点作为Sizzle上下文的有效性
  * @param {Element|Object=} context
  * @returns {Element|Object|Boolean} The input node if acceptable, otherwise a falsy value
  */
@@ -1396,7 +1399,7 @@ Expr = Sizzle.selectors = {
 
 		"CHILD": function( match ) {
 
-			/* matches from matchExpr["CHILD"]
+			/* matches from matchExpr[CHILD]
 				1 type (only|nth|...)
 				2 what (child|of-type)
 				3 argument (even|odd|\d*|\d*n([+-]\d+)?|...)
@@ -1406,6 +1409,14 @@ Expr = Sizzle.selectors = {
 				7 sign of y-component
 				8 y of y-component
 			*/
+			// C1 	only|first|last|nth|nth-last
+		  	// C2	child|of-type
+		  	// C3	括号中全部的内容
+		  	// C4	even odd 或者 表达式2n+1 中的2n 
+		  	// C5	2n的正负 +2n -2n 中的 + -
+		  	// C6	n的倍数 2n 中的 2
+		  	// C7	运算符 + -
+		  	// C8	最后一个数 1
 			match[ 1 ] = match[ 1 ].toLowerCase();
 
 			if ( match[ 1 ].slice( 0, 3 ) === "nth" ) {
@@ -1417,12 +1428,15 @@ Expr = Sizzle.selectors = {
 
 				// numeric x and y parameters for Expr.filter.CHILD
 				// remember that false/true cast respectively to 0/1
+				// match[4] 是 n的倍数
 				match[ 4 ] = +( match[ 4 ] ?
 					match[ 5 ] + ( match[ 6 ] || 1 ) :
 					2 * ( match[ 3 ] === "even" || match[ 3 ] === "odd" ) );
+				// match[5]就是后面的偏移量 -1 +1 0
 				match[ 5 ] = +( ( match[ 7 ] + match[ 8 ] ) || match[ 3 ] === "odd" );
 
 				// other types prohibit arguments
+				//其他的括号里不能有东西
 			} else if ( match[ 3 ] ) {
 				Sizzle.error( match[ 0 ] );
 			}
@@ -2537,6 +2551,7 @@ support.sortDetached = assert( function( el ) {
 // Support: IE<8
 // Prevent attribute/property "interpolation"
 // https://msdn.microsoft.com/en-us/library/ms536429%28VS.85%29.aspx
+// IE8 以下会显示host/# 其实就是显示的el.firstChild.href的值
 if ( !assert( function( el ) {
 	el.innerHTML = "<a href='#'></a>";
 	return el.firstChild.getAttribute( "href" ) === "#";
@@ -2550,6 +2565,7 @@ if ( !assert( function( el ) {
 
 // Support: IE<9
 // Use defaultValue in place of getAttribute("value")
+// 用defaultValue替代getAttribute('value')
 if ( !support.attributes || !assert( function( el ) {
 	el.innerHTML = "<input/>";
 	el.firstChild.setAttribute( "value", "" );
@@ -2564,6 +2580,7 @@ if ( !support.attributes || !assert( function( el ) {
 
 // Support: IE<9
 // Use getAttributeNode to fetch booleans when getAttribute lies
+// 使用getAttributeNode来获取布尔值 当getAttribute不行的时候
 if ( !assert( function( el ) {
 	return el.getAttribute( "disabled" ) == null;
 } ) ) {
