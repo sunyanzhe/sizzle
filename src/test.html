@@ -17,7 +17,7 @@
         <input type="text">
         <br>
         <input name="check" type="checkbox">
-        <input name="check" type="checkbox">
+        <input name="check" id="input" :disabled type="checkbox">
         <input name="check" type="checkbox">
         <br>
         <input name="radio" type="radio">
@@ -27,10 +27,11 @@
     <script>
         window.onload = function() {
             let div = Sizzle('div');
-            let p = Sizzle('#p1', document.body);
-            let container = Sizzle('.container');
-            let text = Sizzle('.container #p1 + input[type="text"]');
-            console.log(text);
+            // let p = Sizzle('#p1', document.body);
+            // let container = Sizzle('.container');
+            // let text = Sizzle('.container #p1 + input[type="text"]');
+            let input = Sizzle('body>div.container input[type=checkbox]:nth-child(2):disabled, p#p1 ~ div, .container + div')
+            // console.log(text);
         }
     </script>
 </body>

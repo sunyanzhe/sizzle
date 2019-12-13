@@ -351,13 +351,15 @@ function Sizzle( selector, context, results, seed ) {
 				// ID选择
 				if ( ( m = match[ 1 ] ) ) {
 
-					// Document context
+          // Document context
+          // 作用域是Document
 					if ( nodeType === 9 ) {
 						if ( ( elem = context.getElementById( m ) ) ) {
 
 							// Support: IE, Opera, Webkit
 							// TODO: identify versions
-							// getElementById can match elements by name instead of ID
+              // getElementById can match elements by name instead of ID
+              // 如果元素的id属性和匹配值相同 那么就直接返回元素
 							if ( elem.id === m ) {
 								results.push( elem );
 								return results;
@@ -366,12 +368,15 @@ function Sizzle( selector, context, results, seed ) {
 							return results;
 						}
 
-					// Element context
+          // Element context
+          // 如果作用域是元素
 					} else {
 
 						// Support: IE, Opera, Webkit
 						// TODO: identify versions
-						// getElementById can match elements by name instead of ID
+            // getElementById can match elements by name instead of ID
+            // element是没有getElementById这个方法的 所以要从document上找 
+            // 找到之后判断该作用域元素是否包含查找到的结果
 						if ( newContext && ( elem = newContext.getElementById( m ) ) &&
 							contains( context, elem ) &&
 							elem.id === m ) {
@@ -382,13 +387,18 @@ function Sizzle( selector, context, results, seed ) {
 					}
 
 				// Type selector
-				// 标签选择
+        // 标签选择
+        // 被QuickExpr选中的选择器不会出现'*'所以不需要考虑兼容问题
+        // 直接调用原生方法就可以了
 				} else if ( match[ 2 ] ) {
 					push.apply( results, context.getElementsByTagName( selector ) );
 					return results;
 
 				// Class selector
-				// class选择
+        // class选择
+        // 判断是否支持getElementsByClassName
+        // 并且这个作用域元素也得支持
+        
 				} else if ( ( m = match[ 3 ] ) && support.getElementsByClassName &&
 					context.getElementsByClassName ) {
 
@@ -442,7 +452,8 @@ function Sizzle( selector, context, results, seed ) {
 						}
 					}
 
-					// Prefix every selector in the list
+          // Prefix every selector in the list
+          // 给每一个select组添加一个前缀
 					groups = tokenize( selector );
 					i = groups.length;
 					while ( i-- ) {
@@ -748,11 +759,11 @@ setDocument = Sizzle.setDocument = function( node ) {
 	// Safari 6.0 supports :scope but it's an alias of :root there.
 	// IE/Edge 和 老浏览器不支持 :scope 这个伪类
 	// 这里判断:scope会不会选中元素 (因为没添加scope这个伪类, 所以按理说length应该为0)
-	support.scope = assert( function( el ) {
-		docElem.appendChild( el ).appendChild( document.createElement( "div" ) );
-		return typeof el.querySelectorAll !== "undefined" &&
-			!el.querySelectorAll( ":scope fieldset div" ).length;
-	} );
+  support.scope = assert( function( el ) {
+    docElem.appendChild( el ).appendChild( document.createElement( "div" ) );
+    return typeof el.querySelectorAll !== "undefined" &&
+      !el.querySelectorAll( ":scope fieldset div" ).length;
+  } );
 
 	/* Attributes
 	---------------------------------------------------------------------- */
@@ -1479,7 +1490,6 @@ Expr = Sizzle.selectors = {
 	},
 
 	filter: {
-
 		"TAG": function( nodeNameSelector ) {
 			var nodeName = nodeNameSelector.replace( runescape, funescape ).toLowerCase();
 			return nodeNameSelector === "*" ?
@@ -1941,21 +1951,25 @@ tokenize = Sizzle.tokenize = function( selector, parseOnly ) {
 		soFar, groups, preFilters,
 		cached = tokenCache[ selector + " " ];
 
+  // 如果缓存中有值 直接返回一个浅复制
 	if ( cached ) {
 		return parseOnly ? 0 : cached.slice( 0 );
 	}
 
 	soFar = selector;
-	groups = [];
+  groups = [];
+  // 如果是child attr pseudo这种复杂的选择器 需要在对捕获组进行二次加工
 	preFilters = Expr.preFilter;
 
 	while ( soFar ) {
 
-		// Comma and first run
+    // Comma and first run
+    // 如果是第一次进循环 或者 遇到了逗号
 		if ( !matched || ( match = rcomma.exec( soFar ) ) ) {
 			if ( match ) {
 
-				// Don't consume trailing commas as valid
+        // Don't consume trailing commas as valid
+        // 把逗号去掉 
 				soFar = soFar.slice( match[ 0 ].length ) || soFar;
 			}
 			groups.push( ( tokens = [] ) );
@@ -1963,7 +1977,8 @@ tokenize = Sizzle.tokenize = function( selector, parseOnly ) {
 
 		matched = false;
 
-		// Combinators
+    // Combinators
+    // 先匹配关系选择器
 		if ( ( match = rcombinators.exec( soFar ) ) ) {
 			matched = match.shift();
 			tokens.push( {
@@ -1975,7 +1990,8 @@ tokenize = Sizzle.tokenize = function( selector, parseOnly ) {
 			soFar = soFar.slice( matched.length );
 		}
 
-		// Filters
+    // Filters
+    // TAG CLASS ATTR CHILD PSEUDO ID 
 		for ( type in Expr.filter ) {
 			if ( ( match = matchExpr[ type ].exec( soFar ) ) && ( !preFilters[ type ] ||
 				( match = preFilters[ type ]( match ) ) ) ) {
@@ -1989,6 +2005,7 @@ tokenize = Sizzle.tokenize = function( selector, parseOnly ) {
 			}
 		}
 
+    //如果都没有匹配上的话, 那就跳出循环
 		if ( !matched ) {
 			break;
 		}
@@ -1996,7 +2013,12 @@ tokenize = Sizzle.tokenize = function( selector, parseOnly ) {
 
 	// Return the length of the invalid excess
 	// if we're just parsing
-	// Otherwise, throw an error or return tokens
+  // Otherwise, throw an error or return tokens
+  // 如果parseOnly是true的话
+  // 那么返回剩余的字符串的长度
+  // 如果没有parseOnly的话并且还有剩余的字符串长度没有匹配完, 那么说明字符不合法 报错
+  // 如果全都匹配上了 那么就返回预编译的对象
+  console.log(groups)
 	return parseOnly ?
 		soFar.length :
 		soFar ?
